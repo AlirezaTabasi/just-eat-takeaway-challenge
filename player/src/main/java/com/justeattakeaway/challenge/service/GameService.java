@@ -18,10 +18,10 @@ import java.util.Random;
 public class GameService {
     @Value("${player.name}")
     private String playerName;
-    @Value("${opponent.topic.name}")
-    private String opponentTopicName;
     @Value("${opponent.port}")
     private int opponentPort;
+    @Value("${opponent.topic.name}")
+    private String opponentTopicName;
 
     private final GameRepository gameRepository;
     private final MessagingSenderService messagingService;
@@ -51,10 +51,7 @@ public class GameService {
             return "Game started Automatically";
         }
 
-        String manualUrl = String.format("http://127.0.0.1:%d/api/v1/game/play?number=%d&&type=MANUAL", opponentPort, number);
-        String automaticUrl = String.format("http://127.0.0.1:%d/api/v1/game/play?number=%d&&type=AUTOMATIC", opponentPort, number);
-
-        return String.format("For continuing the game call: MANUAL[ %s ] AUTOMATIC [ %s ]", manualUrl, automaticUrl);
+        return getUrl(number);
     }
 
     public String play(int number, Type type) {
@@ -84,13 +81,17 @@ public class GameService {
             messagingService.sendMessage(opponentTopicName, new GameMessage(result, type));
             response += "Game Continuing Automatically";
         } else {
-            String manualUrl = String.format("http://127.0.0.1:%d/api/v1/game/play?number=%d&&type=MANUAL", opponentPort, result);
-            String automaticUrl = String.format("http://127.0.0.1:%d/api/v1/game/play?number=%d&&type=AUTOMATIC", opponentPort, result);
-
-            response += String.format("For continuing the game call: MANUAL [ %s ] AUTOMATIC [ %s ]", manualUrl, automaticUrl);
+            response += getUrl(result);
         }
 
         return response;
+    }
+
+    private String getUrl(int number) {
+        String manualUrl = String.format("http://127.0.0.1:%d/api/v1/game/play?number=%d&&type=MANUAL", opponentPort, number);
+        String automaticUrl = String.format("http://127.0.0.1:%d/api/v1/game/play?number=%d&&type=AUTOMATIC", opponentPort, number);
+
+        return String.format("For continuing the game call: MANUAL[ %s ] AUTOMATIC [ %s ]", manualUrl, automaticUrl);
     }
 
     private int addingNumber(int number) {
