@@ -1,5 +1,6 @@
 package com.justeattakeaway.challenge.service;
 
+import com.justeattakeaway.challenge.exception.GameAlreadyRunningException;
 import com.justeattakeaway.challenge.model.Game;
 import com.justeattakeaway.challenge.model.GameMessage;
 import com.justeattakeaway.challenge.model.Status;
@@ -32,13 +33,13 @@ public class GameService {
         this.messagingService = messagingService;
     }
 
-    public String start(Type type) {
+    public String start(Type type) throws GameAlreadyRunningException{
         Optional<Game> game = gameRepository.findById(playerName);
 
         if (game.isPresent() && game.get().getStatus() == Status.PLAY) {
             String info = String.format("%s -> Creating a new game is not possible when a running one exists.", type.name());
             log.info(info);
-            return info;
+            throw new GameAlreadyRunningException(info);
         }
 
         int number = new Random().nextInt(1000) + 3;
